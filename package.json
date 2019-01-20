@@ -1,0 +1,25 @@
+{
+  "name": "node-project",
+  "version": "1.0.0",
+  "description": "",
+  "main": "app.js",
+  "scripts": {
+    "test": "node app"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/abhinavpreetu/bidding_server.git"
+  },
+  "author": "priya",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/abhinavpreetu/bidding_server/issues"
+  },
+  "homepage": "https://github.com/abhinavpreetu/bidding_server#readme",
+  "dependencies": {
+    "body-parser": "^1.18.3",
+    "express": "^4.16.4",
+    "mongoose": "^5.4.5",
+    "pug": "^2.0.3"
+  }
+}
