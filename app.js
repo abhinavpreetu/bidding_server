@@ -2,8 +2,10 @@ const express = require('express');
 const path = require('path');
 const bodyParser = require('body-parser')
 const mongoose = require('mongoose');
+const expressValidator = require('express-validator');	
+const session = require('express-session');
 
-mongoose.connect('mongodb://localhost/nodeProject');
+mongoose.connect('mongodb://localhost/nodeProject',{ useNewUrlParser: true });
 let db = mongoose.connection;
 
 // check db connection
@@ -33,6 +35,31 @@ app.use(bodyParser.json())
 app.set('views',path.join(__dirname,'views'));
 app.set('view engine','pug');
 
+// Express Session Middleware
+app.use(session({
+  secret: 'keyboard cat',
+  resave: true,
+  saveUninitialized: true
+}));
+
+// express validator
+app.use(expressValidator({
+  errorFormatter: function(param, msg, value) {
+      var namespace = param.split('.')
+      , root    = namespace.shift()
+      , formParam = root;
+
+    while(namespace.length) {
+      formParam += '[' + namespace.shift() + ']';
+    }
+    return {
+      param : formParam,
+      msg   : msg,
+      value : value
+    };
+  }
+}));
+
 // routes
 app.get('/',function(req,res){
 	Article.find({},function(err,articles) {
@@ -57,91 +84,8 @@ app.get('/add_articles',function(req,res){
 	});
 });
 
-// add an article
-app.post('/article',function(req,res){
-	let article = new Article();
-
-	article.title = req.body.title;
-	article.author = req.body.author;
-	article.body = req.body.body;
-
-	article.save(function(err) 
-	{
-		if (err) {
-			// console.log(err);
-			// return;
-
-			res.setHeader('Content-Type','application/json');
-    		res.json(err);
-		}
-		else
-		{
-			//res.redirect('/');
-			res.setHeader('Content-Type','application/json');
-    		res.json({'message':'Success'});
-		}
-	});
-});
-
-// get details of an article
-app.get('/article/:id',function(req,res) {
-	Article.findById(req.params.id, function(err, article) {
-		if (err) {
-
-			res.setHeader('Content-Type','application/json');
-    		res.json(err);
-		}
-		else
-		{
-			//res.setHeader('Content-Type','application/json');
-    		res.json(article);
-		}
-	})
-});
-
-// update an article
-app.put('/article/:id',function(req,res){
-	let article = {};
-
-	article.title = req.body.title;
-	article.author = req.body.author;
-	article.body = req.body.body;
-
-	let query = {_id:req.params.id};
-	var options = { runValidators: true };
-	Article.updateOne(query, article, options, function(err) 
-	{
-		if (err) {
-			// console.log(err);
-			// return;
-
-			res.setHeader('Content-Type','application/json');
-    		res.json(err);
-		}
-		else
-		{
-			//res.setHeader('Content-Type','application/json');
-    		res.json({'message':'Success'});
-		}
-	});
-});
-
-// delete an article
-app.delete('/article/:id',function(req,res) {
-	let query = {_id:req.params.id}
-	Article.remove(query, function(err, article) {
-		if (err) {
-
-			res.setHeader('Content-Type','application/json');
-    		res.json(err);
-		}
-		else
-		{
-			res.json({'message':'Success'});
-		}
-	})
-});
-
+let articles = require('./routes/articles');
+app.use('/article', articles);
 
 
 app.listen(3000, function(argument){
